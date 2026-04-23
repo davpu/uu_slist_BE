@@ -124,23 +124,3 @@ layer is added in HW #4.
 
 Instance-level authorization (list **Owner** / list **Member**) is a domain
 concern and belongs to the controller + data layer; deferred until HW #4.
-
-## Quick examples
-
-```bash
-# Register
-curl -s -X POST localhost:3000/user/register \
-  -H 'content-type: application/json' \
-  -d '{"firstName":"A","lastName":"B","email":"a@b.c","password":"12345678"}'
-
-# Login → capture token
-TOKEN=$(curl -s -X POST localhost:3000/user/login \
-  -H 'content-type: application/json' \
-  -d '{"email":"a@b.c","password":"12345678"}' | jq -r .data.token)
-
-# Create list
-curl -s -X POST localhost:3000/shoppingList/create \
-  -H "authorization: Bearer $TOKEN" \
-  -H 'content-type: application/json' \
-  -d '{"name":"Weekend groceries"}'
-```
