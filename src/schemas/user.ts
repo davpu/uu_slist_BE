@@ -41,6 +41,7 @@ export const updateUserSchema = {
   additionalProperties: false,
   minProperties: 1,
   properties: {
+    id: objectId,
     firstName: personName,
     lastName: personName,
     email,

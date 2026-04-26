@@ -5,6 +5,8 @@ export const ErrorCodes = {
   INVALID_TOKEN: "invalidToken",
   NOT_AUTHORIZED: "notAuthorized",
   NOT_FOUND: "notFound",
+  EMAIL_TAKEN: "emailTaken",
+  CONFLICT: "conflict",
   UNEXPECTED: "unexpectedError",
 } as const;
 

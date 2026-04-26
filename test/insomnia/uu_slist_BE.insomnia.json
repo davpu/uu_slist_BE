@@ -1,0 +1,493 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-04-26T00:00:00.000Z",
+  "__export_source": "uu_slist_BE.manual",
+  "resources": [
+    {
+      "_id": "wrk_uuslist",
+      "_type": "workspace",
+      "parentId": null,
+      "name": "uu-slist-BE",
+      "description": "Shopping list backend — BBSY HW #4. All endpoints follow the dtoIn/dtoOut envelope. Login first to populate {{ token }} from the response (the Tests tab on /user/login extracts it via a chained request, but the easiest path is: run login, copy data.token into the env's `token` var).",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_uuslist",
+      "name": "Base Environment",
+      "data": {
+        "baseUrl": "http://localhost:3000",
+        "token": "",
+        "userId": "",
+        "listId": "",
+        "itemId": "",
+        "memberUserId": "",
+        "regularEmail": "ada@example.com",
+        "regularPassword": "hunter22!",
+        "adminEmail": "admin@example.com",
+        "adminPassword": "admin1234!"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "baseUrl",
+          "token",
+          "userId",
+          "listId",
+          "itemId",
+          "memberUserId",
+          "regularEmail",
+          "regularPassword",
+          "adminEmail",
+          "adminPassword"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1,
+      "environmentType": "kv",
+      "kvPairData": []
+    },
+    {
+      "_id": "env_local",
+      "_type": "environment",
+      "parentId": "env_base",
+      "name": "Local",
+      "data": { "baseUrl": "http://localhost:3000" },
+      "dataPropertyOrder": { "&": ["baseUrl"] },
+      "color": "#7d3cff",
+      "isPrivate": false,
+      "metaSortKey": 1,
+      "environmentType": "kv",
+      "kvPairData": []
+    },
+    {
+      "_id": "jar_default",
+      "_type": "cookie_jar",
+      "parentId": "wrk_uuslist",
+      "name": "Default Jar",
+      "cookies": []
+    },
+
+    { "_id": "fld_user",   "_type": "request_group", "parentId": "wrk_uuslist", "name": "User",          "metaSortKey": -100, "environment": {}, "environmentPropertyOrder": null, "description": "Public + authenticated user endpoints." },
+    { "_id": "fld_lists",  "_type": "request_group", "parentId": "wrk_uuslist", "name": "Shopping Lists", "metaSortKey": -90,  "environment": {}, "environmentPropertyOrder": null, "description": "CRUD on shopping lists + membership." },
+    { "_id": "fld_items",  "_type": "request_group", "parentId": "wrk_uuslist", "name": "List Items",     "metaSortKey": -80,  "environment": {}, "environmentPropertyOrder": null, "description": "CRUD on items inside a shopping list." },
+    { "_id": "fld_neg",    "_type": "request_group", "parentId": "wrk_uuslist", "name": "Negative Cases", "metaSortKey": -70,  "environment": {}, "environmentPropertyOrder": null, "description": "Validation, auth, and not-found error envelopes." },
+
+    {
+      "_id": "req_register",
+      "_type": "request",
+      "parentId": "fld_user",
+      "name": "POST /user/register",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/user/register",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"firstName\": \"Ada\",\n  \"lastName\": \"Lovelace\",\n  \"email\": \"{{ _.regularEmail }}\",\n  \"password\": \"{{ _.regularPassword }}\"\n}"
+      },
+      "metaSortKey": -100,
+      "description": "Create a new user account. Public endpoint."
+    },
+    {
+      "_id": "req_login",
+      "_type": "request",
+      "parentId": "fld_user",
+      "name": "POST /user/login",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/user/login",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.regularEmail }}\",\n  \"password\": \"{{ _.regularPassword }}\"\n}"
+      },
+      "metaSortKey": -90,
+      "description": "After 200 OK, copy data.token into the environment variable `token` (and data.user.id into `userId`) so the rest of the requests authenticate."
+    },
+    {
+      "_id": "req_login_admin",
+      "_type": "request",
+      "parentId": "fld_user",
+      "name": "POST /user/login (admin)",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/user/login",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.adminEmail }}\",\n  \"password\": \"{{ _.adminPassword }}\"\n}"
+      },
+      "metaSortKey": -85,
+      "description": "Login as the configured ADMIN_EMAIL — response profiles include 'Authorities'."
+    },
+    {
+      "_id": "req_user_get",
+      "_type": "request",
+      "parentId": "fld_user",
+      "name": "POST /user/get",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/user/get",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{}"
+      },
+      "metaSortKey": -80,
+      "description": "Get caller's own profile. Pass {\"id\":\"<24-hex>\"} to fetch another user."
+    },
+    {
+      "_id": "req_user_update",
+      "_type": "request",
+      "parentId": "fld_user",
+      "name": "POST /user/update",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/user/update",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"firstName\": \"Augusta\"\n}"
+      },
+      "metaSortKey": -70,
+      "description": "Update own profile. Schema requires at least one of firstName/lastName/email."
+    },
+    {
+      "_id": "req_user_delete",
+      "_type": "request",
+      "parentId": "fld_user",
+      "name": "POST /user/delete",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/user/delete",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{}"
+      },
+      "metaSortKey": -60,
+      "description": "Delete self. Authorities can pass {\"id\":\"<24-hex>\"} to delete other users."
+    },
+
+    {
+      "_id": "req_list_create",
+      "_type": "request",
+      "parentId": "fld_lists",
+      "name": "POST /shoppingList/create",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/create",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Weekly groceries\"\n}"
+      },
+      "metaSortKey": -100,
+      "description": "Create a shopping list. Caller becomes ownerId. Copy data.id → environment `listId`."
+    },
+    {
+      "_id": "req_list_list",
+      "_type": "request",
+      "parentId": "fld_lists",
+      "name": "POST /shoppingList/list",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/list",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"role\": \"any\",\n  \"pageIndex\": 0,\n  \"pageSize\": 20\n}"
+      },
+      "metaSortKey": -90,
+      "description": "Page through lists owned by or shared with the caller. role ∈ {owner, member, any}."
+    },
+    {
+      "_id": "req_list_get",
+      "_type": "request",
+      "parentId": "fld_lists",
+      "name": "POST /shoppingList/get",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/get",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"{{ _.listId }}\"\n}"
+      },
+      "metaSortKey": -80,
+      "description": "Read a single list. Caller must be owner or member (Authorities bypass)."
+    },
+    {
+      "_id": "req_list_update",
+      "_type": "request",
+      "parentId": "fld_lists",
+      "name": "POST /shoppingList/update",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/update",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"{{ _.listId }}\",\n  \"name\": \"Renamed weekly groceries\"\n}"
+      },
+      "metaSortKey": -70,
+      "description": "Rename a list. Owner-only."
+    },
+    {
+      "_id": "req_list_delete",
+      "_type": "request",
+      "parentId": "fld_lists",
+      "name": "POST /shoppingList/delete",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/delete",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"{{ _.listId }}\"\n}"
+      },
+      "metaSortKey": -60,
+      "description": "Delete a list. Owner-only."
+    },
+    {
+      "_id": "req_list_addmember",
+      "_type": "request",
+      "parentId": "fld_lists",
+      "name": "POST /shoppingList/addMember",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/addMember",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"{{ _.listId }}\",\n  \"userId\": \"{{ _.memberUserId }}\"\n}"
+      },
+      "metaSortKey": -50,
+      "description": "Add a registered user as member. Owner-only. Set env `memberUserId` to a real user id (e.g., from registering a second user)."
+    },
+    {
+      "_id": "req_list_removemember",
+      "_type": "request",
+      "parentId": "fld_lists",
+      "name": "POST /shoppingList/removeMember",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/removeMember",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"{{ _.listId }}\",\n  \"userId\": \"{{ _.memberUserId }}\"\n}"
+      },
+      "metaSortKey": -40,
+      "description": "Remove a member. Owner-only."
+    },
+    {
+      "_id": "req_list_leave",
+      "_type": "request",
+      "parentId": "fld_lists",
+      "name": "POST /shoppingList/leave",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/leave",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"{{ _.listId }}\"\n}"
+      },
+      "metaSortKey": -30,
+      "description": "Caller (member) leaves the list. Owner cannot leave their own list."
+    },
+
+    {
+      "_id": "req_item_create",
+      "_type": "request",
+      "parentId": "fld_items",
+      "name": "POST /shoppingList/item/create",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/item/create",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"listId\": \"{{ _.listId }}\",\n  \"name\": \"Milk\",\n  \"amount\": 2,\n  \"unit\": \"L\"\n}"
+      },
+      "metaSortKey": -100,
+      "description": "Add an item to a list. Owner or member. Copy data.item.id → env `itemId`."
+    },
+    {
+      "_id": "req_item_update",
+      "_type": "request",
+      "parentId": "fld_items",
+      "name": "POST /shoppingList/item/update",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/item/update",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"listId\": \"{{ _.listId }}\",\n  \"itemId\": \"{{ _.itemId }}\",\n  \"name\": \"Whole milk\",\n  \"amount\": 1,\n  \"unit\": \"L\"\n}"
+      },
+      "metaSortKey": -90,
+      "description": "Update an item. Owner or member."
+    },
+    {
+      "_id": "req_item_setcompleted",
+      "_type": "request",
+      "parentId": "fld_items",
+      "name": "POST /shoppingList/item/setCompleted",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/item/setCompleted",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"listId\": \"{{ _.listId }}\",\n  \"itemId\": \"{{ _.itemId }}\",\n  \"completed\": true\n}"
+      },
+      "metaSortKey": -80,
+      "description": "Toggle the completed flag on an item."
+    },
+    {
+      "_id": "req_item_delete",
+      "_type": "request",
+      "parentId": "fld_items",
+      "name": "POST /shoppingList/item/delete",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/item/delete",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"listId\": \"{{ _.listId }}\",\n  \"itemId\": \"{{ _.itemId }}\"\n}"
+      },
+      "metaSortKey": -70,
+      "description": "Remove an item from the list."
+    },
+
+    {
+      "_id": "req_neg_unauth",
+      "_type": "request",
+      "parentId": "fld_neg",
+      "name": "401 — Missing token",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/list",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{}" },
+      "metaSortKey": -100,
+      "description": "No Authorization header → 401 notAuthenticated."
+    },
+    {
+      "_id": "req_neg_invalid_input",
+      "_type": "request",
+      "parentId": "fld_neg",
+      "name": "400 — Invalid input (short password)",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/user/register",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"firstName\": \"A\",\n  \"lastName\": \"B\",\n  \"email\": \"x@y.z\",\n  \"password\": \"short\"\n}"
+      },
+      "metaSortKey": -90,
+      "description": "Password below minLength → 400 invalidInput with Ajv details."
+    },
+    {
+      "_id": "req_neg_unsupported",
+      "_type": "request",
+      "parentId": "fld_neg",
+      "name": "400 — Unsupported keys",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/create",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"x\",\n  \"foo\": \"bar\"\n}"
+      },
+      "metaSortKey": -80,
+      "description": "additionalProperties: false → 400 unsupportedKeys with the offending keys."
+    },
+    {
+      "_id": "req_neg_duplicate_email",
+      "_type": "request",
+      "parentId": "fld_neg",
+      "name": "409 — Duplicate email",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/user/register",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"firstName\": \"Ada\",\n  \"lastName\": \"Lovelace\",\n  \"email\": \"{{ _.regularEmail }}\",\n  \"password\": \"{{ _.regularPassword }}\"\n}"
+      },
+      "metaSortKey": -70,
+      "description": "Re-registering an existing email → 409 invalidInput."
+    },
+    {
+      "_id": "req_neg_not_found",
+      "_type": "request",
+      "parentId": "fld_neg",
+      "name": "404 — Unknown list id",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/get",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"000000000000000000000000\"\n}"
+      },
+      "metaSortKey": -60,
+      "description": "Valid 24-hex id that does not exist → 404 notFound."
+    },
+    {
+      "_id": "req_neg_forbidden",
+      "_type": "request",
+      "parentId": "fld_neg",
+      "name": "403 — Non-owner update",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/shoppingList/update",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"{{ _.listId }}\",\n  \"name\": \"hacked\"\n}"
+      },
+      "metaSortKey": -50,
+      "description": "Login as a different (non-owner, non-member) user, then run this — expect 403 notAuthorized."
+    }
+  ]
+}
